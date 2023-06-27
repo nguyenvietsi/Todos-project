@@ -18,6 +18,7 @@ export const handler = middy(
         TodoItem
       })
     }
+  }
 )
 
 handler.use(

@@ -4,7 +4,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import * as middy from 'middy'
 import { cors } from 'middy/middlewares'
 
-import { getTodos} from '../../businessLogic/todos
+import { getTodos} from '../../businessLogic/todos'
 import { getUserId } from '../utils';
 
 // TODO: Get all TODO items for a current user
