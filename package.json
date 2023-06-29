@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "aws-sdk": "^2.1404.0",
+    "aws-sdk": "^2.1405.0",
     "middy": "^0.24.0"
   },
   "devDependencies": {

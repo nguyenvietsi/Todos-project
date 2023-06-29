@@ -24,14 +24,14 @@ export class TodosAccess {
         LOGGER.info('New item inserted')
         return todoItem
     }
-    async delete(userId: string, todoId: string): Promise<void> {
+    async delete(todoId: string, userId: string): Promise<void> {
         LOGGER.info('Start delete item')
         await this.docClient
         .delete({
             TableName: this.todoTable,
             Key: {
-                todoId,
-                userId
+                userId,
+                todoId
             }
         })
         .promise()
@@ -77,8 +77,8 @@ export class TodosAccess {
         .update({
             TableName: this.todoTable,
             Key: {
-            todoId: updateTodo.todoId,
-            userId: updateTodo.userId
+                userId: updateTodo.userId,
+                todoId: updateTodo.todoId
             },
             ExpressionAttributeNames: { '#N': 'name' },
             UpdateExpression:

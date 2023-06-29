@@ -11,7 +11,7 @@ export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const todoId = event.pathParameters.todoId
     const parseUserId = getUserId(event)
-    const parseAttachmentUrl = 'https://${process.env.TODO_S3_BUCKET_NAME}.s3.amazonaws.com/${todoId}'
+    const parseAttachmentUrl = `https://${process.env.ATTACHMENT_S3_BUCKET}.s3.amazonaws.com/${todoId}`
     await updateAttachmentUrl(
       todoId,
       parseUserId,
@@ -20,8 +20,13 @@ export const handler = middy(
     const signedUrl = await getUrl(todoId)
     return {
       statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+        'Access-Control-Allow-Headers': 'Accept'        
+      },
       body: JSON.stringify({
-        signedUrl
+        uploadUrl: signedUrl
       })
     }
   }

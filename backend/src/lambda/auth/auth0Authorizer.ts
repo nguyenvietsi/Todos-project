@@ -1,9 +1,10 @@
 import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
 
-import { verify} from 'jsonwebtoken'
+import { verify, decode} from 'jsonwebtoken'
 import { createLogger } from '../../utils/logger'
 import Axios from 'axios'
+import { Jwt } from '../../auth/Jwt'
 import { JwtPayload } from '../../auth/JwtPayload'
 
 const logger = createLogger('auth')
@@ -55,17 +56,25 @@ export const handler = async (
 
 async function verifyToken(authHeader: string): Promise<JwtPayload> {
   const token = getToken(authHeader)
-  let signingKey: string
+  const jwt: Jwt = decode(token, { complete: true }) as Jwt
+
   // TODO: Implement token verification
   // You should implement it similarly to how it was implemented for the exercise for the lesson 5
   // You can read more about how to do this here: https://auth0.com/blog/navigating-rs256-and-jwks/
-  try {
-    signingKey = await getSigningKeys();
-  } catch (e) {
-    logger.error(e);
+  const response = await Axios.get(jwksUrl)
+  const keys = response.data.keys
+  logger.info("keys is : ", keys)
+  const signingKeys = keys.find(key => key.kid === jwt.header.kid)
+  logger.info('signingKeys are: ', signingKeys)
+  if (!signingKeys){
+    throw new Error('JWKS endpoint does not contain any keys')
   }
-  const verified = verify(token, signingKey, {algorithms: ["RS256"]})
-  return verified as JwtPayload
+  const pemData = signingKeys.x5c[0]
+  logger.info("pemData is: ", pemData)
+  const cert = `-----BEGIN CERTIFICATE-----\n${pemData}\n-----END CERTIFICATE-----`
+  const verifiedToken = verify(token, cert, { algorithms: ['RS256'] }) as JwtPayload
+  logger.info('verifiedToken', verifiedToken)
+  return verifiedToken
 }
 
 function getToken(authHeader: string): string {
@@ -78,13 +87,4 @@ function getToken(authHeader: string): string {
   const token = split[1]
 
   return token
-}
-
-const getSigningKeys = async (): Promise<string> => {
-  const response = await Axios.get(jwksUrl)
-  const keys = response.data.keys
-  const signinKeys = keys.filter(key => {
-    return key.use === "sig" && key.kty === "RSA" && key.alg === "RS256" && key.n && key.e && key.kid && (key.x5c && key.x5c.length)
-  })
-  return `-----BEGIN CERTIFICATE-----\\n${signinKeys[0].x5c[0]}\\n-----END CERTIFICATE-----\\n`
 }

@@ -15,8 +15,12 @@ export const handler = middy(
   const todoItems = await getTodos(parseUserId)
   return {
     statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true
+    },
     body: JSON.stringify({
-      todoItems
+      items: todoItems
     })
   }
 }) 
