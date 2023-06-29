@@ -13,6 +13,16 @@ export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const todoId = event.pathParameters.todoId
     const updatedTodo: UpdateTodoRequest = JSON.parse(event.body)
+    if (!updatedTodo.name || !updatedTodo.dueDate || !updatedTodo.done) {
+      return {
+        statusCode: 401,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true
+        },
+        body: 'update information not enough'
+      }
+    }
     // TODO: Update a TODO item with the provided id using values in the "updatedTodo" object
     const parseUserId = getUserId(event)
     const todoItem: TodoItem = await updateTodo(parseUserId, todoId, updatedTodo)
