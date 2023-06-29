@@ -80,16 +80,11 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
-    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-get-todo-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-      # - Effect: Allow
-      #   Action:
-      #     - dynamodb:Query
-      #   Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}/index/${self:provider.environment.TODOS_CREATED_AT_INDEX}
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -115,7 +110,6 @@ functions:
             description: Create a new TODO
             requestModels:
               'application/json': TodoCreateRequest
-    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-create-todo-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -144,7 +138,6 @@ functions:
             description: Update a new TODO
             requestModels:
               'application/json': TodoUpdateRequest
-    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-update-todo-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -167,7 +160,6 @@ functions:
           path: todos/{todoId}
           cors: true
           authorizer:
-    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-delete-todo-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -191,7 +183,6 @@ functions:
           path: todos/{todoId}/attachment
           cors: true
           authorizer: Auth
-    #iamRoleStatementName: ${self:provider.environment.PROJECT_NAME}-generate-s3-upload-url-role-${self:provider.stage}
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -242,8 +233,6 @@ resources:
             AttributeType: S
           - AttributeName: todoId
             AttributeType: S
-          # - AttributeName: createdAt
-          #   AttributeType: S
         KeySchema:
           - AttributeName: userId
             KeyType: HASH
