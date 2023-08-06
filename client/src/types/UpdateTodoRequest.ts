@@ -1,5 +1,7 @@
 export interface UpdateTodoRequest {
+  userId: string
+  todoId: string
   name: string
-  dueDate: string
+  wish: string
   done: boolean
 }

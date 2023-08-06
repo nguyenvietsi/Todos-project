@@ -5,6 +5,7 @@ export default class Auth {
   accessToken;
   idToken;
   expiresAt;
+  userId;
 
   auth0 = new auth0.WebAuth({
     domain: authConfig.domain,
@@ -13,7 +14,6 @@ export default class Auth {
     responseType: 'token id_token',
     scope: 'openid'
   });
-
   constructor(history) {
     this.history = history
 
@@ -35,9 +35,10 @@ export default class Auth {
       if (authResult && authResult.accessToken && authResult.idToken) {
         console.log('Access token: ', authResult.accessToken)
         console.log('id token: ', authResult.idToken)
+        this.userId = authResult.idTokenPayload.sub
         this.setSession(authResult);
       } else if (err) {
-        this.history.replace('/');
+        this.history.replace('/todos');
         console.log(err);
         alert(`Error: ${err.error}. Check the console for further details.`);
       }
@@ -63,7 +64,7 @@ export default class Auth {
     this.expiresAt = expiresAt;
 
     // navigate to the home route
-    this.history.replace('/');
+    this.history.replace('/todos');
   }
 
   renewSession() {
@@ -92,7 +93,7 @@ export default class Auth {
     });
 
     // navigate to the home route
-    this.history.replace('/');
+    this.history.replace('/todos');
   }
 
   isAuthenticated() {

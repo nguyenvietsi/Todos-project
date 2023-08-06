@@ -24,6 +24,7 @@ provider:
   # ${self:provider.environment.ATTACHMENT_S3_BUCKET}
   environment:
     TODOS_TABLE: Serverless-todo-app-${self:provider.stage}
+    TODOS_PUBLIC_TABLE: Serverless-todo-app-public-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
     ATTACHMENT_S3_BUCKET: udacity-serverless-c4-todo-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
@@ -91,7 +92,25 @@ functions:
           - xray:PutTelemetryRecords
         Resource:
           - '*'
-
+  GetOneTodos:
+    handler: src/lambda/http/getOneTodos.handler
+    events:
+      - http:
+          method: get
+          path: getOneTodos
+          cors: true
+          authorizer:
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_PUBLIC_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - '*'
   # TODO: Configure this function - 
   # Provide iamRoleStatements property. Decide the Actions and AWS Resource. 
   # To refer to an AWS resource defined in the "Resources" section, you can use "Resource: !GetAtt <resource-name>.Arn"
@@ -114,7 +133,9 @@ functions:
       - Effect: Allow
         Action:
           - dynamodb:PutItem
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+        Resource: 
+          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_PUBLIC_TABLE}
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -128,11 +149,11 @@ functions:
     handler: src/lambda/http/updateTodo.handler
     events:
       - http:
-          method: patch
+          method: post
           reqValidatorName: RequestBodyValidator
           path: todos/{todoId}
           cors: true
-          authorizer: Auth
+          authorizer:
           documentation:
             summary: Update a new TODO
             description: Update a new TODO
@@ -157,7 +178,7 @@ functions:
     events:
       - http:
           method: delete
-          path: todos/{todoId}
+          path: todos/{todoId}/{createdAt}
           cors: true
           authorizer:
     iamRoleStatements:
@@ -165,7 +186,9 @@ functions:
         Action:
           - dynamodb:DeleteItem
           - dynamodb:Query
-        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+        Resource:
+          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+          - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_PUBLIC_TABLE}
       - Effect: Allow
         Action:
           - xray:PutTraceSegments
@@ -183,6 +206,29 @@ functions:
           path: todos/{todoId}/attachment
           cors: true
           authorizer: Auth
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:*
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*
+      - Effect: Allow
+        Action:
+          - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: Allow
+        Action:
+          - xray:PutTraceSegments
+          - xray:PutTelemetryRecords
+        Resource:
+          - '*'  
+  GetUploadUrl:
+    handler: src/lambda/http/getUploadUrl.handler
+    events:
+      - http:
+          method: post
+          path: todos/getUrl/{todoId}
+          cors: true
+          authorizer: 
     iamRoleStatements:
       - Effect: Allow
         Action:
@@ -249,7 +295,31 @@ resources:
                 KeyType: RANGE
             Projection:
               ProjectionType: ALL
-              
+
+    TodosPublicTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        AttributeDefinitions:
+          - AttributeName: todoId
+            AttributeType: S
+          - AttributeName: createdAt
+            AttributeType: S
+        KeySchema:
+          - AttributeName: todoId
+            KeyType: HASH
+          - AttributeName: createdAt
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.TODOS_PUBLIC_TABLE}
+        LocalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
+            KeySchema:
+              - AttributeName: todoId
+                KeyType: HASH
+              - AttributeName: createdAt
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL              
 
     # TODO: Complete the bucket properties below. 
     # Do not forget to add the CorsConfiguration propoerty

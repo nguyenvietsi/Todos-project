@@ -3,16 +3,23 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@auth0/auth0-react": "^2.2.0",
     "axios": "^0.21.4",
+    "base-64": "^1.0.0",
     "dateformat": "^3.0.3",
+    "html2canvas": "^1.4.1",
     "immutability-helper": "^3.1.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-native-base64": "^0.2.1",
+    "react-qr-code": "^2.0.11",
     "react-router-dom": "^5.3.4",
     "react-scripts": "^4.0.3",
     "semantic-ui-css": "^2.5.0",
     "semantic-ui-react": "^2.1.4",
-    "styled-components": "^5.3.11"
+    "styled-components": "^5.3.11",
+    "uuid": "^9.0.0",
+    "uuidv4": "^6.2.13"
   },
   "devDependencies": {
     "@types/dateformat": "^3.0.1",
@@ -20,6 +27,7 @@
     "@types/node": "16.3.2",
     "@types/react": "17.0.14",
     "@types/react-dom": "17.0.9",
+    "@types/react-native-base64": "^0.2.0",
     "@types/react-router-dom": "^5.3.3",
     "@types/styled-components": "^5.1.26",
     "auth0-js": "^9.21.0",

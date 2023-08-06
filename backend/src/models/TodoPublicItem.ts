@@ -1,7 +1,6 @@
-export interface TodoItem {
-  userId: string
-  partyName: string
+export interface TodoPublicItem {
   todoId: string
+  partyName: string
   createdAt: string
   name: string
   dueDate: string

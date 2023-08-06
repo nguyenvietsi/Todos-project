@@ -1,10 +1,10 @@
 import { TodosAccess } from '../dataLayer/todosAcess'
 import { AttachmentUtils } from '../fileStorage/attachmentUtils'
 import { TodoItem } from '../models/TodoItem'
-import { CreateTodoRequest } from '../requests/CreateTodoRequest'
+import { TodoPublicItem } from '../models/TodoPublicItem'
+import { CreateNewInvRequest } from '../requests/CreateNewInvRequest'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
 import { createLogger } from '../utils/logger'
-import * as uuid from 'uuid'
 
 const todosAccess = new TodosAccess()
 const attachmentUtils = new AttachmentUtils()
@@ -12,16 +12,33 @@ const attachmentUtils = new AttachmentUtils()
 const LOGGER = createLogger("businessLogic");
 
 export async function createTodo(
-    parseBody: CreateTodoRequest,
+    parseBody: CreateNewInvRequest,
     parseUserId: string
     ): Promise<TodoItem> {
     LOGGER.info('Start create a new item')
+    const parseAttachmentUrl = `https://${process.env.ATTACHMENT_S3_BUCKET}.s3.amazonaws.com/${ parseBody.userID}`
+    await todosAccess.createPublic({
+        todoId: parseBody.userID,
+        partyName: parseBody.partyName,
+        name: parseBody.name,
+        dueDate: parseBody.dueDate,
+        inviteDate: parseBody.inviteDate,
+        address: parseBody.address,
+        wish: null,
+        attachmentUrl: parseAttachmentUrl,
+        createdAt: new Date().toISOString(),
+        done: false
+    })
     return await todosAccess.create({
-        todoId: uuid.v4(),
+        todoId: parseBody.userID,
+        partyName: parseBody.partyName,
         userId: parseUserId,
         name: parseBody.name,
         dueDate: parseBody.dueDate,
-        attachmentUrl: null,
+        inviteDate: parseBody.inviteDate,
+        address: parseBody.address,
+        wish: null,
+        attachmentUrl: parseAttachmentUrl,
         createdAt: new Date().toISOString(),
         done: false
     })
@@ -29,10 +46,11 @@ export async function createTodo(
 
 export async function deleteTodo(
     todoId: string,
-    parseUserId: string
+    parseUserId: string,
+    createdAt: string
     ): Promise<void> {
     LOGGER.info('Start delete a item')
-    return await todosAccess.delete(todoId, parseUserId)
+    return await todosAccess.delete(todoId, parseUserId, createdAt)
 }
 
 export async function updateAttachmentUrl(
@@ -53,13 +71,13 @@ export async function getUrl(todoId: string): Promise<string> {
     return await attachmentUtils.getAttachmentUtils(todoId)
 }
 
-export async function updateTodo(parseUserId: string, todoId: string, updateTodo: UpdateTodoRequest): Promise<TodoItem> {
+export async function updateTodo(todoId: string, updateTodo: UpdateTodoRequest): Promise<TodoItem> {
     LOGGER.info('Update todo')
     return await todosAccess.update({
         todoId: todoId,
-        userId: parseUserId,
+        userId: updateTodo.userId,
         name: updateTodo.name,
-        dueDate: updateTodo.dueDate,
+        wish: updateTodo.wish,
         done: updateTodo.done
     })
 }
@@ -67,5 +85,9 @@ export async function updateTodo(parseUserId: string, todoId: string, updateTodo
 export async function getTodos(userId: string): Promise<TodoItem[]>{
     LOGGER.info('Get all items')
     return todosAccess.getTodos(userId)
+}
+export async function getOneTodos(todoId: string): Promise<TodoPublicItem[]>{
+    LOGGER.info('Get one items')
+    return todosAccess.getOneTodos(todoId)
 }
 

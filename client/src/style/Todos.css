@@ -1,0 +1,22 @@
+.homeBorder {
+  border: 1px solid #fed9dc;
+  border-radius: 5px;
+  margin-top:20px;
+  margin-bottom:20px;
+  background-color: white;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+}
+.name{
+  background-color: white ;
+  color: #976164;
+  font-size: 200%;
+  padding: 1;
+  font-family: 'Comic Sans MS', cursive;
+}
+.wish{
+  background-color: white ;
+  color: #976164;
+  font-size: 150%;
+  padding: 1;
+  font-family: 'Ink Free', cursive;
+}

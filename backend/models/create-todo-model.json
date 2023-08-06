@@ -6,13 +6,29 @@
     "name": {
       "type": "string"
     },
+    "partyName": {
+      "type": "string"
+    },
     "dueDate": {
+      "type": "string"
+    },
+    "inviteDate": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "userID": {
       "type": "string"
     }
   },
   "required": [
     "name",
-    "dueDate"
+    "partyName",
+    "dueDate",
+    "inviteDate",
+    "address",
+    "userID"
   ],
   "additionalProperties": false
 }

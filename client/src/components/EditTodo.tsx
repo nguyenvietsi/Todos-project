@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Form, Button } from 'semantic-ui-react'
 import Auth from '../auth/Auth'
 import { getUploadUrl, uploadFile } from '../api/todos-api'
-
 enum UploadState {
   NoUpload,
   FetchingPresignedUrl,

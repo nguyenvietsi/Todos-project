@@ -1,0 +1,34 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  background-color: #fcf1f5  ;
+}
+.topnav {
+    overflow: hidden;
+    background-color: #fcf1f5 ;
+    margin-bottom: 3%;
+    padding-top: 1%;
+  }
+  
+.app-name{
+    background-color: #fcf1f5 ;
+    color: #ff7aa3;
+    font-size: 300%;
+    margin-bottom: 0%;
+    font-family: 'Brush Script MT', cursive;
+  }
+  .app-name:hover {
+    color: #ff7aa3;
+} 
+  .userInfo {
+    float: right;
+    background-color: #fcf1f5 ;
+    padding-top: 1%;
+  }
+  
+  .signInOut{
+    background-color: #fcf1f5 ;
+    color: #ff7aa3;
+    font-size: 200%;
+    border: none;
+  }

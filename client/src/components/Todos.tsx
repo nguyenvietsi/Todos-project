@@ -11,12 +11,14 @@ import {
   Icon,
   Input,
   Image,
+  Dropdown,
   Loader
 } from 'semantic-ui-react'
 
 import { createTodo, deleteTodo, getTodos, patchTodo } from '../api/todos-api'
 import Auth from '../auth/Auth'
 import { Todo } from '../types/Todo'
+import '../style/Todos.css'
 
 interface TodosProps {
   auth: Auth
@@ -43,46 +45,15 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   onEditButtonClick = (todoId: string) => {
     this.props.history.push(`/todos/${todoId}/edit`)
   }
-
-  onTodoCreate = async (event: React.ChangeEvent<HTMLButtonElement>) => {
-    try {
-      const dueDate = this.calculateDueDate()
-      const newTodo = await createTodo(this.props.auth.getIdToken(), {
-        name: this.state.newTodoName,
-        dueDate
-      })
-      this.setState({
-        todos: [...this.state.todos, newTodo],
-        newTodoName: ''
-      })
-    } catch {
-      alert('Todo creation failed')
-    }
+  onMakeNewButtonClick = () => {
+    this.props.history.push(`/todos/new`)
   }
 
-  onTodoDelete = async (todoId: string) => {
+  onTodoDelete = async (todoId: string, createdAt: string) => {
     try {
-      await deleteTodo(this.props.auth.getIdToken(), todoId)
+      await deleteTodo(this.props.auth.getIdToken(), todoId, createdAt)
       this.setState({
         todos: this.state.todos.filter(todo => todo.todoId !== todoId)
-      })
-    } catch {
-      alert('Todo deletion failed')
-    }
-  }
-
-  onTodoCheck = async (pos: number) => {
-    try {
-      const todo = this.state.todos[pos]
-      await patchTodo(this.props.auth.getIdToken(), todo.todoId, {
-        name: todo.name,
-        dueDate: todo.dueDate,
-        done: !todo.done
-      })
-      this.setState({
-        todos: update(this.state.todos, {
-          [pos]: { done: { $set: !todo.done } }
-        })
       })
     } catch {
       alert('Todo deletion failed')
@@ -96,6 +67,8 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
         todos,
         loadingTodos: false
       })
+      console.log(todos)
+      
     } catch (e) {
       alert(`Failed to fetch todos: ${(e as Error).message}`)
     }
@@ -104,7 +77,6 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
   render() {
     return (
       <div>
-        <Header as="h1">TODOs</Header>
 
         {this.renderCreateTodoInput()}
 
@@ -117,19 +89,10 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
     return (
       <Grid.Row>
         <Grid.Column width={16}>
-          <Input
-            action={{
-              color: 'teal',
-              labelPosition: 'left',
-              icon: 'add',
-              content: 'New task',
-              onClick: this.onTodoCreate
-            }}
-            fluid
-            actionPosition="left"
-            placeholder="To change the world..."
-            onChange={this.handleNameChange}
-          />
+          <Button
+            icon
+            onClick={() => this.onMakeNewButtonClick()}
+          ><Icon name="add"style ={{color:"#B1B0B2"}}/> New Invition Card</Button>
         </Grid.Column>
         <Grid.Column width={16}>
           <Divider />
@@ -158,45 +121,35 @@ export class Todos extends React.PureComponent<TodosProps, TodosState> {
 
   renderTodosList() {
     return (
-      <Grid padded>
+      <Grid padded  >
         {this.state.todos.map((todo, pos) => {
+          //todo.attachmentUrl = "https://udacity-serverless-c4-todo-images-dev.s3.amazonaws.com/1cb199b9-14c1-47ce-ae75-e3d58b2cc667"
           return (
-            <Grid.Row key={todo.todoId}>
-              <Grid.Column width={1} verticalAlign="middle">
-                <Checkbox
-                  onChange={() => this.onTodoCheck(pos)}
-                  checked={todo.done}
-                />
-              </Grid.Column>
-              <Grid.Column width={10} verticalAlign="middle">
+            <Grid.Row key={todo.todoId} className="homeBorder" >
+              <Grid.Column className='name' width={10} verticalAlign="middle"> 
                 {todo.name}
               </Grid.Column>
-              <Grid.Column width={3} floated="right">
-                {todo.dueDate}
-              </Grid.Column>
               <Grid.Column width={1} floated="right">
-                <Button
-                  icon
-                  color="blue"
-                  onClick={() => this.onEditButtonClick(todo.todoId)}
-                >
-                  <Icon name="pencil" />
-                </Button>
+                <Dropdown icon='big ellipsis horizontal' style ={{color:"#976164"}}>
+                  <Dropdown.Menu>
+                    <Dropdown.Item text='Edit post' icon='edit' style ={{color:"#976164"}}  onClick={() => this.onEditButtonClick(todo.todoId)}/>
+                    <Dropdown.Item text='Delete post' icon='trash alternate'  style ={{color:"#976164"}} onClick={() => this.onTodoDelete(todo.todoId, todo.createdAt)}/>
+                  </Dropdown.Menu>
+                </Dropdown>
               </Grid.Column>
-              <Grid.Column width={1} floated="right">
-                <Button
-                  icon
-                  color="red"
-                  onClick={() => this.onTodoDelete(todo.todoId)}
-                >
-                  <Icon name="delete" />
-                </Button>
+              <Grid.Column width={10} verticalAlign="middle">   &nbsp;
               </Grid.Column>
-              {todo.attachmentUrl && (
-                <Image src={todo.attachmentUrl} size="small" wrapped />
-              )}
-              <Grid.Column width={16}>
-                <Divider />
+              <Grid.Column width={10} verticalAlign="middle">   &nbsp;
+              </Grid.Column>
+              <Grid.Column className='wish' width={10} verticalAlign="middle">
+                {todo.wish}
+              </Grid.Column>
+              <Grid.Column className='wish' width={10} verticalAlign="middle">   &nbsp;
+              </Grid.Column>
+              <Grid.Column width={16} verticalAlign="middle">
+                {todo.done && (
+                  <Image src={todo.attachmentUrl} wrapped />
+                )}
               </Grid.Column>
             </Grid.Row>
           )

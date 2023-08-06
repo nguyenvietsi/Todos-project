@@ -3,6 +3,7 @@ import * as AWSXRay from 'aws-xray-sdk'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
 import { createLogger } from '../utils/logger'
 import { TodoItem } from '../models/TodoItem'
+import { TodoPublicItem } from '../models/TodoPublicItem'
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
@@ -13,7 +14,8 @@ export class TodosAccess {
 
     constructor(
         private readonly docClient: DocumentClient = createDynamoDBClient(),
-        private readonly todoTable = process.env.TODOS_TABLE) {}
+        private readonly todoTable = process.env.TODOS_TABLE,
+        private readonly todoPublicTable = process.env.TODOS_PUBLIC_TABLE) {}
     async create(todoItem: TodoItem): Promise<TodoItem> {
         LOGGER.info('Start insert a new item')
         const query: DocumentClient.PutItemInput = {
@@ -24,7 +26,17 @@ export class TodosAccess {
         LOGGER.info('New item inserted')
         return todoItem
     }
-    async delete(todoId: string, userId: string): Promise<void> {
+    async createPublic(todoPublicItem: TodoPublicItem): Promise<TodoPublicItem> {
+        LOGGER.info('Start insert a new item')
+        const query: DocumentClient.PutItemInput = {
+            TableName: this.todoPublicTable,
+            Item: todoPublicItem
+        }
+        await this.docClient.put(query).promise()
+        LOGGER.info('New item inserted')
+        return todoPublicItem
+    }
+    async delete(todoId: string, userId: string, createdAt: string): Promise<void> {
         LOGGER.info('Start delete item')
         await this.docClient
         .delete({
@@ -32,6 +44,15 @@ export class TodosAccess {
             Key: {
                 userId,
                 todoId
+            }
+        })
+        .promise()
+        await this.docClient
+        .delete({
+            TableName: this.todoPublicTable,
+            Key: {
+                todoId,
+                createdAt
             }
         })
         .promise()
@@ -70,6 +91,18 @@ export class TodosAccess {
         const items = result.Items
         return items as TodoItem[]
     }
+    async getOneTodos(todoId: string): Promise<TodoPublicItem[]> {
+        LOGGER.info('Getting one items')
+        const result = await this.docClient.query({
+            TableName: this.todoPublicTable,
+            KeyConditionExpression: 'todoId = :todoId',
+            ExpressionAttributeValues: {
+                ':todoId': todoId
+            }  
+        }).promise()
+        const items = result.Items
+        return items as TodoPublicItem[]
+    }
 
     async update(updateTodo: any): Promise<TodoItem> {
         LOGGER.info('Update todo item')
@@ -82,10 +115,10 @@ export class TodosAccess {
             },
             ExpressionAttributeNames: { '#N': 'name' },
             UpdateExpression:
-                'set #N = :name, dueDate = :dueDate, done = :done',
+                'set #N = :name, wish = :wish, done = :done',
             ExpressionAttributeValues: {
                 ':name': updateTodo.name,
-                ':dueDate': updateTodo.dueDate,
+                ':wish': updateTodo.wish,
                 ':done': updateTodo.done
             },
             ReturnValues: 'UPDATED_NEW'

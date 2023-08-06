@@ -3,10 +3,16 @@
   "title": "group",
   "type": "object",
   "properties": {
+    "userId": {
+      "type": "string"
+    },
+    "todoId": {
+      "type": "string"
+    },
     "name": {
       "type": "string"
     },
-    "dueDate": {
+    "wish": {
       "type": "string"
     },
     "done": {
@@ -14,8 +20,10 @@
     }
   },
   "required": [
+    "userId",
+    "todoId",
     "name",
-    "dueDate",
+    "wish",
     "done"
   ],
   "additionalProperties": false
